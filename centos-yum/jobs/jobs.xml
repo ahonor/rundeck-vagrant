@@ -1,0 +1,157 @@
+<joblist>
+  <job>
+    <id>c1ddb601-bd19-474a-9769-09c1618d5a74</id>
+    <schedule>
+      <time hour='*' seconds='0' minute='0/15' />
+      <dayofmonth />
+      <month day='*' month='*' />
+      <year year='*' />
+    </schedule>
+    <loglevel>INFO</loglevel>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <jobref name='check' group='failover' />
+        <errorhandler>
+          <jobref name='takeover' group='failover' />
+        </errorhandler>
+      </command>
+    </sequence>
+    <description>Successfully check the current primary or take its place.</description>
+    <name>Check-Or-Takeover</name>
+    <context>
+      <project>examples</project>
+    </context>
+    <notification>
+      <onfailure>
+        <webhook urls='http://127.0.0.1/cgi-bin/mytakeover-notification.cgi' />
+      </onfailure>
+    </notification>
+    <dispatch>
+      <threadcount>1</threadcount>
+      <keepgoing>false</keepgoing>
+      <excludePrecedence>true</excludePrecedence>
+      <rankOrder>ascending</rankOrder>
+    </dispatch>
+    <uuid>c1ddb601-bd19-474a-9769-09c1618d5a74</uuid>
+    <nodefilters>
+      <include>
+        <tags>secondary+rundeck</tags>
+      </include>
+    </nodefilters>
+    <group>failover</group>
+  </job>
+  <job>
+    <id>fa8febd1-a8f8-43ad-ba14-cd8a431e5436</id>
+    <schedule>
+      <time hour='*' seconds='0' minute='0/10' />
+      <dayofmonth />
+      <month day='*' month='*' />
+      <year year='*' />
+    </schedule>
+    <loglevel>INFO</loglevel>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <scriptfile>/var/lib/rundeck/scripts/failover/syncme.sh</scriptfile>
+        <scriptargs>${option.secondary} ${option.key}</scriptargs>
+      </command>
+    </sequence>
+    <description>Synchronize the job state data to this failover instance.</description>
+    <name>Sync</name>
+    <context>
+      <project>examples</project>
+      <options>
+        <option required='true' name='key' valueExposed='true' secure='true' value='8d0DcDdccdc5sdkveu95EVUvv8PddPsK'>
+          <description>the api key</description>
+        </option>
+        <option required='true' name='secondary' value='http://localhost:4440'>
+          <description>the rundeck server url</description>
+        </option>
+      </options>
+    </context>
+    <dispatch>
+      <threadcount>1</threadcount>
+      <keepgoing>false</keepgoing>
+      <excludePrecedence>true</excludePrecedence>
+      <rankOrder>ascending</rankOrder>
+    </dispatch>
+    <uuid>fa8febd1-a8f8-43ad-ba14-cd8a431e5436</uuid>
+    <nodefilters>
+      <include>
+        <tags>secondary+rundeck</tags>
+      </include>
+    </nodefilters>
+    <group>failover</group>
+  </job>
+  <job>
+    <id>738a5664-bd5e-4de5-b96d-ebb18850df13</id>
+    <loglevel>INFO</loglevel>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <scriptfile>/var/lib/rundeck/scripts/failover/check.sh</scriptfile>
+        <scriptargs>${option.primary} ${option.key} ${option.maxtry}</scriptargs>
+      </command>
+    </sequence>
+    <description>check if primary healthy</description>
+    <name>check</name>
+    <context>
+      <project>examples</project>
+      <options>
+        <option required='true' name='key' valueExposed='true' secure='true' value='dn8VdcK8sVssS4OVV5uk0sdECdOUdu67'>
+          <description>the api key</description>
+        </option>
+        <option required='true' name='maxtry' value='3'>
+          <description>maximum number of tries</description>
+        </option>
+        <option required='true' name='primary' value='http://127.0.0.1:14440'>
+          <description>the rundeck url</description>
+        </option>
+      </options>
+    </context>
+    <dispatch>
+      <threadcount>1</threadcount>
+      <keepgoing>false</keepgoing>
+      <excludePrecedence>true</excludePrecedence>
+      <rankOrder>ascending</rankOrder>
+    </dispatch>
+    <uuid>738a5664-bd5e-4de5-b96d-ebb18850df13</uuid>
+    <nodefilters>
+      <include>
+        <tags>secondary+rundeck</tags>
+      </include>
+    </nodefilters>
+    <group>failover</group>
+  </job>
+  <job>
+    <id>98f8d2d7-3bbe-48ee-af53-274e44594d45</id>
+    <loglevel>INFO</loglevel>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <scriptfile>/var/lib/rundeck/scripts/failover/update-jobs.sh</scriptfile>
+        <scriptargs>${option.url} ${option.key}</scriptargs>
+      </command>
+      <command>
+        <scriptfile>/var/lib/rundeck/scripts/failover/update-tags.sh</scriptfile>
+        <scriptargs>${option.url} ${option.key}</scriptargs>
+      </command>
+      <command>
+        <scriptfile>/var/lib/rundeck/scripts/failover/update-vip.sh</scriptfile>
+        <scriptargs />
+      </command>
+    </sequence>
+    <description>Take over as the primary rundeck server.</description>
+    <name>takeover</name>
+    <context>
+      <project>examples</project>
+      <options>
+        <option required='true' name='key' valueExposed='true' secure='true' value='8d0DcDdccdc5sdkveu95EVUvv8PddPsK'>
+          <description>the api key</description>
+        </option>
+        <option required='true' name='url' value='http://localhost:4440'>
+          <description>the rundeck server url</description>
+        </option>
+      </options>
+    </context>
+    <uuid>98f8d2d7-3bbe-48ee-af53-274e44594d45</uuid>
+    <group>failover</group>
+  </job>
+</joblist>
