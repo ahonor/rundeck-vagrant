@@ -32,6 +32,7 @@ keypath=$(awk -F= '/framework.ssh.keypath/ {print $2}' /etc/rundeck/framework.pr
 DIR=/var/rundeck/projects/$PROJECT/etc
 
 xmlstarlet ed -u "/project/node/@tags" -v "$TAGS" $DIR/resources.xml  |
+xmlstarlet ed -u "/project/node/@name" -v "$NODENAME"                 |  
 xmlstarlet ed -u "/project/node/@hostname" -v "$NODEIP"               |  
 xmlstarlet ed -i "/project/node" -t attr -n ssh-keypath -v ${keypath} > resources.xml.new
 mv resources.xml.new $DIR/resources.xml

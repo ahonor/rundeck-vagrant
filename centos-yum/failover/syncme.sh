@@ -43,13 +43,18 @@ echo "Will be rsync'ing from primary: $SSH_USR@$SSH_HOST"
 BACKUP=/tmp/backup
 
 # List of directories for backup
-DIRS=(/var/rundeck/projects /var/lib/rundeck/logs)
+# Exclude the resources.xml for the project.
+#DIRS=(/var/rundeck/projects /var/lib/rundeck/logs)
+
+DIRS=(/var/lib/rundeck/logs)
+
 
 SSH_OPTIONS="-oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null"
 for dir in ${DIRS[*]}
 do
     [ ! -d ${BACKUP}/${dir} ] && mkdir -p ${BACKUP}/${dir}
-    rsync -acz --rsh="ssh -i ${SSH_KEY} ${SSH_OPTIONS}" \
+    rsync -acz \
+        --rsh="ssh -i ${SSH_KEY} ${SSH_OPTIONS}" \
         $SSH_USR@$SSH_HOST:$dir  $(dirname ${BACKUP}/${dir})
 done
 
@@ -62,7 +67,9 @@ popd
 # Use rsync to be efficient about copying changes.
 
 # - Projects
-rsync -acz $BACKUP/var/rundeck/projects/* /var/rundeck/projects
+#rsync -acz \
+#    --exclude $BACKUP/var/rundeck/projects/*/resources.xml \
+#    $BACKUP/var/rundeck/projects/* /var/rundeck/projects
 
 # - Execution log output.
 rsync -acz $BACKUP/var/lib/rundeck/logs/* /var/lib/rundeck/logs
