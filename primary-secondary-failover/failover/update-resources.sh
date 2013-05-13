@@ -36,10 +36,10 @@ if [ "true" != "$success" ] ; then
 fi
 
 # Get existing tags for this server.
-tags=$(xml sel -t -m "/project/node" -v @tags resource.xml)
+tags=$(xmlstarlet sel -t -m "/project/node" -v @tags resource.xml)
 ntags=$(echo $tags | sed 's/secondary/primary/g')
 
-xml ed -u "/project/node/@tags" -v "$ntags" resource.xml > resource.xml.new
+xmlstarlet ed -u "/project/node/@tags" -v "$ntags" resource.xml > resource.xml.new
 
 exit $?
 #

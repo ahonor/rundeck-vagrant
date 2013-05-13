@@ -130,11 +130,11 @@
         <scriptargs>${option.url} ${option.key}</scriptargs>
       </command>
       <command>
-        <scriptfile>/var/lib/rundeck/scripts/failover/update-tags.sh</scriptfile>
+        <scriptfile>/var/lib/rundeck/scripts/failover/update-resources.sh</scriptfile>
         <scriptargs>${option.url} ${option.key}</scriptargs>
       </command>
       <command>
-        <scriptfile>/var/lib/rundeck/scripts/failover/update-vip.sh</scriptfile>
+        <scriptfile>/var/lib/rundeck/scripts/failover/do-switch.sh</scriptfile>
         <scriptargs />
       </command>
     </sequence>

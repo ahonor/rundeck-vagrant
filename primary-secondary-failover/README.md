@@ -31,7 +31,7 @@ You can access the rundecks from your host machine through vagrant's port forwar
 * primary: http://localhost:14440
 * secondary: http://localhost:24440
 
-## Operation
+## Operations
 
 The jobs used for synchronization and takeover are in a job group
 called "failover". The jobs are pre-configured by the provisioning process
@@ -52,3 +52,15 @@ You should see system info about the primary displayed in the job output.
 
 Next, try the "failover/Sync" job. This job uses rsync to copy job output logs from the primary
 so they can be viewable on the secondary.
+
+## Takeover Scripts
+
+The failover/takeover jobs is responsible for executing any procedure
+needed to transition the secondary server to become the primary server.
+
+The takeover job defines three steps that each call a separate script:
+
+* update-jobs.sh: Removes the cron schedule for the Check-Or-Takeover and Sync jobs. 
+* update-resources.sh: Updates the resource data to show the secondary is now tagged primary.
+* do-switch.sh: This is a place holder script which might update load balancer or EIPs.
+
