@@ -3,13 +3,25 @@
 #set -e 
 #set -u
 
+if [ $# -ne 2 ]
+then
+    echo >&2 "usage: bootstrap name mysqladdr"
+    exit 1
+fi
+NAME=$1
+MYSQLADDR=$2
 
 # Software install
 # ----------------
 #
 # Utilities
 #
-
+curl -s http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -o epel-release.rpm -z epel-release.rpm
+if ! rpm -q epel-release
+then
+    rpm -Uvh epel-release.rpm
+fi
+yum -y install xmlstarlet coreutils rsync
 #
 # JRE
 #
@@ -29,12 +41,37 @@ chmod 755 ~rundeck
 
 # Configure the system
 #
-
+# Add vagrant user to rundeck group
+usermod -g rundeck vagrant
 #
 # Disable the firewall so we can easily access it from the host
 service iptables stop
 #
 
+# Configure rundeck
+# -----------------
+# 
+cd /etc/rundeck
+cat >rundeck-config.properties.new <<EOF
+#loglevel.default is the default log level for jobs: ERROR,WARN,INFO,VERBOSE,DEBUG
+loglevel.default=INFO
+rdeck.base=/var/lib/rundeck
+rss.enabled=true
+dataSource.url = jdbc:mysql://$MYSQLADDR/rundeck?autoReconnect=true
+dataSource.username=rundeckuser
+dataSource.password=rundeckpassword
+EOF
+mv rundeck-config.properties.new rundeck-config.properties
+chown rundeck:rundeck rundeck-config.properties
+
+sed "s/localhost/$NAME/g" framework.properties > framework.properties.new
+mv framework.properties.new framework.properties
+chown rundeck:rundeck framework.properties
+#
+
+# Set the rundeck password
+# 
+echo 'rundeck' | passwd --stdin rundeck
 
 # Start up rundeck
 # ----------------

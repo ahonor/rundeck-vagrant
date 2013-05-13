@@ -1,36 +1,11 @@
 
 Vagrant.configure("2") do |config|
 
-  config.vm.define :mysql do |mysql|
-    mysql.vm.box = "CentOS-6.3-x86_64-minimal"
-    mysql.vm.hostname = "centos-mysql.local"
-    mysql.vm.network :private_network, ip: "192.168.50.6"
-    mysql.vm.network :forwarded_port, guest: 3306, host: 13306
-    mysql.vm.provision :shell, :path => "install-mysql.sh", :args => "'mysql'"
-  end
+  config.vm.box = "CentOS-6.3-x86_64-minimal"
 
-  config.vm.define :primary do |primary|
-    primary.vm.box = "CentOS-6.3-x86_64-minimal"
-    primary.vm.hostname = "primary"
-    primary.vm.network :private_network, ip: "192.168.50.4"
-    primary.vm.network :forwarded_port, guest: 4440, host: 14440
-    primary.vm.provision :shell, :path => "bootstrap.sh", :args => "primary 192.168.50.6"
-    primary.vm.provision :shell, :path => "add-project.sh", :args => "examples primary 192.168.50.4 rundeck,primary"
-    primary.vm.provision :shell, :path => "generate-apikey.sh"
-    primary.vm.provision :shell, :path => "load-jobs.sh"
+  config.vm.network :forwarded_port, guest: 4440, host: 14440
 
-  end
-
-  config.vm.define :secondary do |secondary|
-    secondary.vm.box = "CentOS-6.3-x86_64-minimal"
-    secondary.vm.hostname = "secondary"
-    secondary.vm.network :private_network, ip: "192.168.50.5"
-    secondary.vm.network :forwarded_port, guest: 4440, host: 24440
-    secondary.vm.provision :shell, :path => "bootstrap.sh", :args => "secondary 192.168.50.6"
-    secondary.vm.provision :shell, :path => "add-project.sh", :args => "examples secondary 192.168.50.5 rundeck,secondary"
-    secondary.vm.provision :shell, :path => "add-primary.sh", :args => "examples primary 192.168.50.4"
-    secondary.vm.provision :shell, :path => "load-jobs.sh", :args => "192.168.50.4:4440"
-  end
+  config.vm.provision :shell, :path => "bootstrap.sh"
+  config.vm.provision :shell, :path => "add-project.sh", :args => "examples"
 
 end
-
