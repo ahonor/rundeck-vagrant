@@ -11,50 +11,76 @@ then
 fi
 PROJECT=${1}
 NAME=${2}
-REMOTE_HOST_IP=${3}
-REMOTE_HOST_USER=rundeck
-REMOTE_HOST_PASSWD=rundeck
+SSH_HOST_IP=${3}
+SSH_HOST_USER=rundeck
+SSH_HOST_PASSWD=rundeck
 
-SSH_KEY_PATH_PUB="~rundeck/.ssh/id_rsa.pub"
+# Lookup the SSH key for this user.
+SSH_KEY_PATH_PUB="$(eval echo ~${SSH_HOST_USER}/.ssh/id_rsa.pub)"
 
+if ! eval test -f ${SSH_KEY_PATH_PUB}
+then
+    echo >&2 "${SSH_HOST_USER} host key not found: $SSH_KEY_PATH_PUB"
+    exit 1
+fi
 
-yum -y install expect
+SSH_OPTIONS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
-# Copy this hosts ssh key to the primary
-echo "Copying secondary's ssh key to $REMOTE_HOST_USER@$REMOTE_HOST_IP"
-expect -c "expect '' \
-  {eval spawn \
-  ssh-copy-id -i $SSH_KEY_PATH_PUB $REMOTE_HOST_USER@$REMOTE_HOST_IP; \
-  interact -o -nobuffer -re .*assword.* return; \
-  send "$REMOTE_HOST_PASSWD\r"; send -- "\r"; \
-  expect eof;} "
+# Copy this hosts ssh key to the primary.
+if ! timeout 60s su - ${SSH_HOST_USER} -c "ssh ${SSH_OPTIONS} ${SSH_HOST_IP} /bin/true" 2>&1 >/dev/null
+then
+    echo "Copying secondary's ssh key to ${SSH_HOST_USER}@${SSH_HOST_IP}"
+    yum -y install expect
 
+    expect /vagrant/ssh-copy-id.expect ${SSH_HOST_IP} ${SSH_HOST_USER} ${SSH_HOST_PASSWD} ${SSH_KEY_PATH_PUB}
+
+    # Test the key-based ssh access to the primary.
+    echo "Testing ssh access..."
+    if ! timeout 60s su - ${SSH_HOST_USER} -c "ssh ${SSH_OPTIONS} ${SSH_HOST_USER}@${SSH_HOST_IP} uptime"
+    then echo >&2 "Warning. Could not ssh after key was copied. Continuing anyway."
+    fi
+fi
 
 
 
 # Generate the resource metadata for the primary.
-DIR=/var/rundeck/projects/$PROJECT/etc
-echo "Add primary to resources directory: $DIR"
-mkdir -p $DIR/resources
-cat >> $DIR/project.properties <<EOF
+DIR=/var/rundeck/projects/${PROJECT}/etc
+if [ ! -d $DIR/resources ]
+then
+    echo "creating resources directory: $DIR"
+    mkdir -p $DIR/resources
+    cat >> $DIR/project.properties <<EOF
 resources.source.1.type=directory
 resources.source.1.config.directory=$DIR/resources
 EOF
+fi
 
-cat > $DIR/resources/primary.xml <<EOF
+if [ ! -f $DIR/resources/primary.xml ]
+then
+    echo "Generating resource info for primary ${SSH_HOST_IP}."
+    cat > $DIR/resources/primary.xml <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
-  <node name="$NAME" description="The primary rundeck server node."
+  <node name="${NAME}" description="The primary rundeck server node."
         tags="rundeck,primary"
-        hostname="$REMOTE_HOST_IP"  username="$REMOTE_HOST_USER"
+        hostname="${SSH_HOST_IP}" username="${SSH_HOST_USER}"
         ssh-keypath="/var/lib/rundeck/.ssh/id_rsa"/>
 </project>
 EOF
+fi
 
 chown -R rundeck:rundeck $DIR/resources
 
-# run the node listing.
-dispatch -p $PROJECT -v -I name=$NAME
-
+# Test the primary can be listed by name or tags.
+if [ "$(dispatch -p ${PROJECT} -I name=${NAME})" != ${NAME} ]
+then
+    echo >&2 "primary node could not be found by name."
+    exit 1
+fi
+if [ "$(dispatch -p ${PROJECT} -I tags=rundeck+primary)" != ${NAME} ]
+then
+    echo >&2 "primary node could not be found by tags."
+    exit 1
+fi
 
 exit $?

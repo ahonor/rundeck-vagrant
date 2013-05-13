@@ -1,0 +1,22 @@
+#!/usr/bin/env expect
+
+set timeout 60
+
+if { $argc != 4 } {
+    puts stderr "usage: ssh-copy-id.expect host user password keyfile"
+    exit 2
+}
+
+set host [lindex $argv 0]
+set user [lindex $argv 1]
+set password [lindex $argv 2]
+set keyfile [lindex $argv 3]
+
+
+spawn ssh-copy-id -i $keyfile $user@$host
+
+expect  "yes/no"    { send "yes\n"; } 
+expect  "password:" { send "$password\n"; exp_continue }
+
+
+

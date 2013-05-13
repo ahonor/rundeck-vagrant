@@ -13,7 +13,7 @@ The vagrant configuration defines the following virtual machines:
 All machines use the same centos base box and install software via yum/rpm.
 
 
-## Requirments
+## Requirements
 
 * Internet access to download packages from public repositories.
 * [Vagrant 1.2.2](http://downloads.vagrantup.com)
