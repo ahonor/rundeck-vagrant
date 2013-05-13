@@ -37,7 +37,7 @@ SSH_HOST=$(xmlstarlet sel -t -m /project/node -v @hostname    resources.xml)
 SSH_USR=$(xmlstarlet  sel -t -m /project/node -v @username    resources.xml)
 SSH_KEY=$(xmlstarlet  sel -t -m /project/node -v @ssh-keypath resources.xml)
 
-echo "Will be rsync'ing from primary: $SSH_USR@$SSH_HOST"
+echo "rsync'ing from primary: $SSH_USR@$SSH_HOST"
 
 # Create backup directories.
 BACKUP=/tmp/backup
@@ -59,7 +59,7 @@ do
 done
 
 
-pushd $BACKUP
+pushd $BACKUP >/dev/null
 tar czf /tmp/backup.tzg .
 popd
 
@@ -74,6 +74,7 @@ popd
 # - Execution log output.
 rsync -acz $BACKUP/var/lib/rundeck/logs/* /var/lib/rundeck/logs
 
+echo Done.
 
 exit $?
 #
