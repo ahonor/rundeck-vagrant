@@ -21,7 +21,7 @@ SSH_KEY_PATH_PUB="~rundeck/.ssh/id_rsa.pub"
 yum -y install expect
 
 # Copy this hosts ssh key to the primary
-echo "Copying ssh key to primary"
+echo "Copying secondary's ssh key to $REMOTE_HOST_USER@$REMOTE_HOST_IP"
 expect -c "expect '' \
   {eval spawn \
   ssh-copy-id -i $SSH_KEY_PATH_PUB $REMOTE_HOST_USER@$REMOTE_HOST_IP; \

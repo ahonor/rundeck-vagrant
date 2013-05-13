@@ -16,12 +16,11 @@ TAGS=$4
 
 
 echo Create project $PROJECT...
-# Create an example project
-rd-project -a create -p $PROJECT
+# Create an example project as the rundeck user
+su - rundeck -c "rd-project -a create -p $PROJECT"
 
-# Run simple commands to double check.
+# Run simple commands to double check the project.
 dispatch -p $PROJECT > /dev/null
-# Print out the available nodes.
 # Fire off a command.
 dispatch -p $PROJECT -f -- whoami
 

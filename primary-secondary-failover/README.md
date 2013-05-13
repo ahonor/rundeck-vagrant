@@ -12,15 +12,11 @@ The vagrant configuration defines the following virtual machines:
 
 All machines use the same centos base box and install software via yum/rpm.
 
-The Vagrantfile 
 
 ## Requirments
 
 * Internet access to download packages from public repositories.
 * [Vagrant 1.2.2](http://downloads.vagrantup.com)
-* CentOS 6.3 x86_64 minimal [base box](http://www.vagrantbox.es)
-   
-    vagrant box add CentOS-6.3-x86_64-minimal https://dl.dropbox.com/u/7225008/Vagrant/CentOS-6.3-x86_64-minimal.box
 
 ## Startup
 
