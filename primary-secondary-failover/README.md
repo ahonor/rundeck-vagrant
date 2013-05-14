@@ -31,6 +31,21 @@ You can access the rundecks from your host machine through vagrant's port forwar
 * primary: http://localhost:14440
 * secondary: http://localhost:24440
 
+Login to either rundeck instance using user/pass: admin/admin
+
+### Shell Logins
+
+You can login into any VM via vagrant ssh. Eg:
+
+    vagrant ssh secondary
+    
+Once logged in as vagrant, you can use sudo/su to change users.    
+Here's how to change user to the rundeck login:
+
+    sudo su - rundeck
+
+You can also ssh to the rundeck VMs using user/password: rundeck/rundeck
+
 ## Operations
 
 The jobs used for synchronization and takeover are in a job group
