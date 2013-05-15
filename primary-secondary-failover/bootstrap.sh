@@ -60,11 +60,18 @@ rss.enabled=true
 dataSource.url = jdbc:mysql://$MYSQLADDR/rundeck?autoReconnect=true
 dataSource.username=rundeckuser
 dataSource.password=rundeckpassword
+rundeck.clusterMode.enabled=true
 EOF
 mv rundeck-config.properties.new rundeck-config.properties
 chown rundeck:rundeck rundeck-config.properties
 
 sed "s/localhost/$NAME/g" framework.properties > framework.properties.new
+grep -q rundeck.server.uuid framework.properties.new || {
+UUID=$(uuidgen)
+cat >>framework.properties.new <<EOF
+rundeck.server.uuid=$UUID
+EOF
+}
 mv framework.properties.new framework.properties
 chown rundeck:rundeck framework.properties
 #
