@@ -3,13 +3,14 @@
 #set -e 
 #set -u
 
-if [ $# -ne 2 ]
+if [ $# -lt 2 ]
 then
-    echo >&2 "usage: bootstrap name mysqladdr"
+    echo >&2 "usage: bootstrap name mysqladdr [bintray yum repo url]"
     exit 1
 fi
 NAME=$1
 MYSQLADDR=$2
+BINTRAY_URL=$3
 
 # Software install
 # ----------------
@@ -29,9 +30,17 @@ yum -y install java-1.6.0
 #
 # Rundeck 
 #
-if ! rpm -q rundeck-repo
+if [ -n "$BINTRAY_URL" ]
 then
-    rpm -Uvh http://repo.rundeck.org/latest.rpm 
+    curl -# --fail -L -o /etc/yum.repos.d/bintray.repo "$BINTRAY_URL" || {
+        echo "failed downloading bintray.repo"
+        exit 2
+    }
+else
+    if ! rpm -q rundeck-repo
+    then
+        rpm -Uvh http://repo.rundeck.org/latest.rpm 
+    fi
 fi
 yum -y install rundeck
 
