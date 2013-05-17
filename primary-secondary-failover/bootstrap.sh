@@ -6,14 +6,14 @@ set -u
 
 # Process command line arguments.
 
-if [ $# -ne 2 ]
+if [ $# -lt 2 ]
 then
-    echo >&2 "usage: bootstrap name mysqladdr"
+    echo >&2 "usage: bootstrap name mysqladdr [bintray yum repo url]"
     exit 1
 fi
 NAME=$1
 MYSQLADDR=$2
-RUNDECK_YUM_REPO=http://repo.rundeck.org/latest.rpm
+BINTRAY_URL=$3
 
 # Software install
 # ----------------
@@ -34,9 +34,17 @@ yum -y install java-1.6.0
 #
 # Rundeck 
 #
-if ! rpm -q rundeck-repo
+if [ -n "$BINTRAY_URL" ]
 then
-    rpm -Uvh "${RUNDECK_YUM_REPO}"
+    curl -# --fail -L -o /etc/yum.repos.d/bintray.repo "$BINTRAY_URL" || {
+        echo "failed downloading bintray.repo"
+        exit 2
+    }
+else
+    if ! rpm -q rundeck-repo
+    then
+        rpm -Uvh http://repo.rundeck.org/latest.rpm 
+    fi
 fi
 yum -y install rundeck
 
@@ -64,12 +72,19 @@ rss.enabled=true
 dataSource.url = jdbc:mysql://$MYSQLADDR/rundeck?autoReconnect=true
 dataSource.username=rundeckuser
 dataSource.password=rundeckpassword
+rundeck.clusterMode.enabled=true
 EOF
 mv rundeck-config.properties.new rundeck-config.properties
 chown rundeck:rundeck rundeck-config.properties
 
 # Replace references to localhost with this node's name.
 sed "s/localhost/$NAME/g" framework.properties > framework.properties.new
+grep -q rundeck.server.uuid framework.properties.new || {
+UUID=$(uuidgen)
+cat >>framework.properties.new <<EOF
+rundeck.server.uuid=$UUID
+EOF
+}
 mv framework.properties.new framework.properties
 chown rundeck:rundeck framework.properties
 

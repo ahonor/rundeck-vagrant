@@ -4,6 +4,7 @@ Vagrant.configure("2") do |config|
   config.vm.box_url = "https://dl.dropbox.com/u/7225008/Vagrant/CentOS-6.3-x86_64-minimal.box"
 
   PROJECT="examples"
+  BINTRAY_YUM_REPO_URL="https://bintray.com/repo/rpm/rundeck/ci-snapshot-rpm"
 
   config.vm.define :mysql do |mysql|
     mysql.vm.hostname = "centos-mysql.local"
@@ -16,18 +17,16 @@ Vagrant.configure("2") do |config|
     primary.vm.hostname = "primary"
     primary.vm.network :private_network, ip: "192.168.50.4"
     primary.vm.network :forwarded_port, guest: 4440, host: 14440
-    primary.vm.provision :shell, :path => "bootstrap.sh", :args => "primary 192.168.50.6"
+    primary.vm.provision :shell, :path => "bootstrap.sh", :args => "primary 192.168.50.6 #{BINTRAY_YUM_REPO_URL}"
     primary.vm.provision :shell, :path => "add-project.sh", :args => "#{PROJECT} primary 192.168.50.4 rundeck,primary"
     primary.vm.provision :shell, :path => "generate-apikey.sh"
-    primary.vm.provision :shell, :path => "load-jobs.sh"
-
   end
 
   config.vm.define :secondary do |secondary|
     secondary.vm.hostname = "secondary"
     secondary.vm.network :private_network, ip: "192.168.50.5"
     secondary.vm.network :forwarded_port, guest: 4440, host: 24440
-    secondary.vm.provision :shell, :path => "bootstrap.sh", :args => "secondary 192.168.50.6"
+    secondary.vm.provision :shell, :path => "bootstrap.sh", :args => "secondary 192.168.50.6 #{BINTRAY_YUM_REPO_URL}"
     secondary.vm.provision :shell, :path => "add-project.sh", :args => "#{PROJECT} secondary 192.168.50.5 rundeck,secondary"
     secondary.vm.provision :shell, :path => "add-primary.sh", :args => "#{PROJECT} primary 192.168.50.4"
     secondary.vm.provision :shell, :path => "load-jobs.sh", :args => "192.168.50.4:4440"
