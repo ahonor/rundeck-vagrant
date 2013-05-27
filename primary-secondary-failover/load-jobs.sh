@@ -3,7 +3,13 @@
 set -e
 set -u
 
-PRIMARY=${1:-}
+[ $# -lt 1 ] && {
+    echo >&2 'usage: load-jobs project [primary]'
+    exit 2
+}
+
+PROJECT=$1
+PRIMARY=${2:-}
 
 
 echo "Get the API token for this server..."
@@ -39,8 +45,9 @@ chown -R rundeck:rundeck /var/lib/rundeck/scripts
 
 # Replace the token with the one here.
 echo "Updating job definitions for this environment"
-sed 's,@SCRIPTDIR@,/var/lib/rundeck/scripts/failover,g' /vagrant/jobs/jobs.xml |
+sed -e 's,@SCRIPTDIR@,/var/lib/rundeck/scripts/failover,g' /vagrant/jobs/jobs.xml |
 xmlstarlet ed -u "//job/context/options/option[@name='key']/@value" -v "$token" |
+xmlstarlet ed -u "//job/context/options/option[@name='project']/@value" -v "$PROJECT" |
 xmlstarlet ed -u "//job/context/options/option[@name='primary']/@value" -v "${PRIMARY:-}" > jobs.xml.new
 
 

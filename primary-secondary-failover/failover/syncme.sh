@@ -4,22 +4,21 @@ set -e
 set -u
 
 # Process the command arguments.
-if [ $# -lt 2 ]
+if [ $# -lt 3 ]
 then
-    echo >&2 "usage: $(basename $0) url apikey"
+    echo >&2 "usage: $(basename $0) url apikey project"
     exit 1
 fi
 RDURL=$1
 API_KEY=$2
-
-project=$RD_JOB_PROJECT
+PROJECT=$3
 
 APIURL="${RDURL}/api/3/resources"
 AUTHHEADER="X-RunDeck-Auth-Token: $API_KEY"
 CURLOPTS="-s -S -L"
 CURL="curl $CURLOPTS"
 tags="rundeck+primary";  # encode the '+' char.
-params="project=$project&tags=${tags/+/%2B}"
+params="project=$PROJECT&tags=${tags/+/%2B}"
 
 # Call the API
 $CURL -H "$AUTHHEADER" -o resources.xml $APIURL?${params}

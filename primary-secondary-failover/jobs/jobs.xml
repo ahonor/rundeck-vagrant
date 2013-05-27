@@ -52,7 +52,7 @@
     <sequence keepgoing='false' strategy='node-first'>
       <command>
         <scriptfile>/var/lib/rundeck/scripts/failover/syncme.sh</scriptfile>
-        <scriptargs>${option.secondary} ${option.key}</scriptargs>
+        <scriptargs>${option.secondary} ${option.key} ${option.project}</scriptargs>
       </command>
     </sequence>
     <description>Synchronize the job state data to this failover instance.</description>
@@ -65,6 +65,9 @@
         </option>
         <option required='true' name='secondary' value='http://localhost:4440'>
           <description>the rundeck server url</description>
+        </option>
+        <option required='true' name='project' value=''>
+          <description>the rundeck project</description>
         </option>
       </options>
     </context>
