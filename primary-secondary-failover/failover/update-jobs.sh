@@ -9,21 +9,22 @@ set -u
 
 
 # Process the command arguments.
-if [ $# -lt 2 ]
+if [ $# -lt 3 ]
 then
-    echo >&2 "usage: update-jobs.sh url apikey"
+    echo >&2 "usage: update-jobs.sh url apikey project"
     exit 1
 fi
 RDURL=$1
 API_KEY=$2
+PROJECT=$3
 
-project=$RD_JOB_PROJECT
+
 
 APIURL="${RDURL}/api/1/jobs/export"
 AUTHHEADER="X-RunDeck-Auth-Token: $API_KEY"
 CURLOPTS="-s -S -L"
 CURL="curl $CURLOPTS"
-params="project=$project&groupPath=failover"
+params="project=$PROJECT&groupPath=failover"
 
 echo updating job definition.
 
