@@ -44,32 +44,24 @@ fi
 
 
 # Generate the resource metadata for the primary.
-DIR=/var/rundeck/projects/${PROJECT}/etc
-if [ ! -d $DIR/resources ]
-then
-    echo "creating resources directory: $DIR"
-    mkdir -p $DIR/resources
-    cat >> $DIR/project.properties <<EOF
-resources.source.1.type=directory
-resources.source.1.config.directory=$DIR/resources
-EOF
-fi
+RESOURCES=/var/rundeck/projects/${PROJECT}/etc/resources.xml
 
-if [ ! -f $DIR/resources/primary.xml ]
+if ! xmlstarlet sel -t -m "/project/node[@name='${NAME}']" -v @name $RESOURCES
 then
     echo "Generating resource info for primary ${SSH_HOST_IP}."
-    cat > $DIR/resources/primary.xml <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<project>
-  <node name="${NAME}" description="The primary rundeck server node."
-        tags="rundeck,primary"
-        hostname="${SSH_HOST_IP}" username="${SSH_HOST_USER}"
-        ssh-keypath="/var/lib/rundeck/.ssh/id_rsa"/>
-</project>
-EOF
+    xmlstarlet ed -P -S -L -s /project -t elem -n NodeTMP -v "" \
+        -i //NodeTMP -t attr -n "name" -v "${NAME}" \
+        -i //NodeTMP -t attr -n "description" -v "Rundeck server node." \
+        -i //NodeTMP -t attr -n "tags" -v "rundeck,primary" \
+        -i //NodeTMP -t attr -n "hostname" -v "${SSH_HOST_IP}" \
+        -i //NodeTMP -t attr -n "username" -v "${SSH_HOST_USER}" \
+        -i //NodeTMP -t attr -n "ssh-keypath" -v "/var/lib/rundeck/.ssh/id_rsa" \
+        -r //NodeTMP -v node \
+        $RESOURCES
+else
+    echo "Node $NAME already defined in resources.xml"
 fi
-
-chown -R rundeck:rundeck $DIR/resources
+chown -R rundeck:rundeck $RESOURCES
 
 # Test the primary can be listed by name or tags.
 if [ "$(dispatch -p ${PROJECT} -I name=${NAME})" != ${NAME} ]
