@@ -130,7 +130,7 @@
     <sequence keepgoing='false' strategy='node-first'>
       <command>
         <scriptfile>/var/lib/rundeck/scripts/failover/update-jobs.sh</scriptfile>
-        <scriptargs>${option.url} ${option.key} ${job.project}</scriptargs>
+        <scriptargs>${option.url} ${option.key} ${job.project} ${node.server-uuid}</scriptargs>
       </command>
       <command>
         <scriptfile>/var/lib/rundeck/scripts/failover/update-resources.sh</scriptfile>
