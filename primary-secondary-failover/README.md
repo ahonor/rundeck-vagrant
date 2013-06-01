@@ -6,8 +6,8 @@ models two rundeck instances sharing a mysql database.
 The vagrant configuration defines the following virtual machines:
 
 * **mysql**: Common database instance shared by both rundeck hosts.
-* **primary**: The user-facing "primary" rundeck.
-* **secondary**: The standby rundeck instance. It runs jobs 
+* **rundeck1**: The user-facing "primary" rundeck.
+* **rundeck2**: The standby rundeck instance. It runs jobs 
   to sync from the _primary_ and check it to see if the secondary should "takeover".
 
 All machines use the same centos base box and install software via yum/rpm.
@@ -23,21 +23,21 @@ All machines use the same centos base box and install software via yum/rpm.
 Start up the VMs in the following order.
 
     vagrant up mysql
-    vagrant up primary
-    vagrant up secondary
+    vagrant up rundeck1
+    vagrant up rundeck2
 
 You can access the rundecks from your host machine through vagrant's port forwarding.
 
-* primary: http://localhost:14440
-* secondary: http://localhost:24440
+* rundeck1: http://localhost:14440
+* rundeck2: http://localhost:24440
 
 Login to either rundeck instance using user/pass: admin/admin
 
 ### Shell Logins
 
-You can login into any VM via vagrant ssh. Eg:
+You can login into any VM via vagrant ssh. Eg: login to the secondary rundeck:
 
-    vagrant ssh secondary
+    vagrant ssh rundeck2
     
 Once logged in as vagrant, you can use sudo/su to change users.    
 Here's how to change user to the rundeck login:
