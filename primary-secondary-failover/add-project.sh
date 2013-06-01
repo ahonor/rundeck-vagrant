@@ -27,12 +27,14 @@ dispatch -p $PROJECT -f -- whoami
 
 echo "Project created. Update resource metadata for this host."
 keypath=$(awk -F= '/framework.ssh.keypath/ {print $2}' /etc/rundeck/framework.properties)
+uuid=$(awk -F= '/rundeck.server.uuid/ {print $2}' /etc/rundeck/framework.properties)
 # Update the resource metadata for this host.
 DIR=/var/rundeck/projects/$PROJECT/etc
 
 xmlstarlet ed -u "/project/node/@tags" -v "$TAGS" $DIR/resources.xml  |
 xmlstarlet ed -u "/project/node/@name" -v "$NODENAME"                 |  
 xmlstarlet ed -u "/project/node/@hostname" -v "$NODEIP"               |  
+xmlstarlet ed -i "/project/node" -t attr -n server-uuid -v ${uuid}    |
 xmlstarlet ed -i "/project/node" -t attr -n ssh-keypath -v ${keypath} > resources.xml.new
 mv resources.xml.new $DIR/resources.xml
 
