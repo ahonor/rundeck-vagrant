@@ -37,10 +37,19 @@ then
     # Test the key-based ssh access to the primary.
     echo "Testing ssh access..."
     if ! timeout 60s su - ${SSH_HOST_USER} -c "ssh ${SSH_OPTIONS} ${SSH_HOST_USER}@${SSH_HOST_IP} uptime"
-    then echo >&2 "Warning. Could not ssh after key was copied. Continuing anyway."
+    then echo >&2 "Could not ssh a command after key was copied." ; exit 1;
     fi
 fi
 
+
+# Get the UUID from the primary.
+# Copy the primary's framework.properties file over and parse it.
+if ! timeout 60s su - ${SSH_HOST_USER} -c "scp ${SSH_OPTIONS} ${SSH_HOST_USER}@${SSH_HOST_IP}:/etc/rundeck/framework.properties /tmp/framework.properties.$$"
+then
+    echo >&2 "Could not get framework.properties from ${SSH_HOST_USER}@${SSH_HOST_IP}"
+    exit 1
+fi
+SERVER_UUID=$(awk -F= '/rundeck.server.uuid/ {print $2}' /tmp/framework.properties.$$)
 
 
 # Generate the resource metadata for the primary.
@@ -56,6 +65,7 @@ then
         -i //NodeTMP -t attr -n "hostname" -v "${SSH_HOST_IP}" \
         -i //NodeTMP -t attr -n "username" -v "${SSH_HOST_USER}" \
         -i //NodeTMP -t attr -n "ssh-keypath" -v "/var/lib/rundeck/.ssh/id_rsa" \
+        -i //NodeTMP -t attr -n "server-uuid" -v "${SERVER_UUID}" \
         -r //NodeTMP -v node \
         $RESOURCES
 else
