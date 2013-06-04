@@ -6,14 +6,15 @@ set -u
 
 # Process command line arguments.
 
-if [ $# -lt 2 ]
+if [ $# -lt 3 ]
 then
-    echo >&2 "usage: bootstrap name mysqladdr [bintray yum repo url]"
+    echo >&2 "usage: bootstrap name mysqladdr rundeck_yum_repo [rerun_yum_repo]"
     exit 1
 fi
 NAME=$1
 MYSQLADDR=$2
-BINTRAY_URL=$3
+RUNDECK_REPO_URL=$3
+RERUN_REPO_URL=${4:-}
 
 # Software install
 # ----------------
@@ -27,6 +28,19 @@ then
     rpm -Uvh epel-release.rpm
 fi
 yum -y install xmlstarlet coreutils rsync
+
+#
+# Rerun 
+#
+if [ -n "${RERUN_REPO_URL:-}" ]
+then
+    curl -# --fail -L -o /etc/yum.repos.d/rerun.repo "$RERUN_REPO_URL" || {
+        echo "failed downloading rerun.repo config"
+        exit 2
+    }
+fi
+yum -y install rerun rerun-rundeck-admin
+
 #
 # JRE
 #
@@ -34,10 +48,10 @@ yum -y install java-1.6.0
 #
 # Rundeck 
 #
-if [ -n "$BINTRAY_URL" ]
+if [ -n "$RUNDECK_REPO_URL" ]
 then
-    curl -# --fail -L -o /etc/yum.repos.d/bintray.repo "$BINTRAY_URL" || {
-        echo "failed downloading bintray.repo"
+    curl -# --fail -L -o /etc/yum.repos.d/rundeck.repo "$RUNDECK_REPO_URL" || {
+        echo "failed downloading rundeck.repo config"
         exit 2
     }
 else
@@ -61,6 +75,10 @@ service iptables stop
 
 # Configure rundeck.
 # -----------------
+
+# Replace the apitoken policy
+cp /vagrant/templates/apitoken.aclpolicy /etc/rundeck/apitoken.aclpolicy
+
 #
 # Configure the mysql connection.
 cd /etc/rundeck
