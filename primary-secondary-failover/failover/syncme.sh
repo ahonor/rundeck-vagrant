@@ -13,6 +13,19 @@ RDURL=$1
 API_KEY=$2
 PROJECT=$3
 
+ List of directories to backup
+# Exclude the resources.xml for the project.
+#DIRS=(/var/rundeck/projects /var/lib/rundeck/logs)
+
+DIRS=()
+
+
+if [ ${#DIRS[*]} -lt 1 ]
+then	
+	echo "No directories configured. Nothing to do."
+	exit 0;
+fi	
+
 APIURL="${RDURL}/api/3/resources"
 AUTHHEADER="X-RunDeck-Auth-Token: $API_KEY"
 CURLOPTS="-s -S -L"
@@ -41,15 +54,9 @@ echo "rsync'ing from primary: $SSH_USR@$SSH_HOST"
 # Create backup directories.
 BACKUP=/tmp/backup
 
-# List of directories for backup
-# Exclude the resources.xml for the project.
-#DIRS=(/var/rundeck/projects /var/lib/rundeck/logs)
-
-DIRS=(/var/lib/rundeck/logs)
-
-
+#
 SSH_OPTIONS="-oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null"
-for dir in ${DIRS[*]}
+for dir in ${DIRS[*]:-}
 do
     [ ! -d ${BACKUP}/${dir} ] && mkdir -p ${BACKUP}/${dir}
     rsync -acz \
@@ -60,7 +67,7 @@ done
 
 pushd $BACKUP >/dev/null
 tar czf /tmp/backup.tzg .
-popd
+popd >/dev/null
 
 # Copy the primary's data into this instance.
 # Use rsync to be efficient about copying changes.
@@ -71,8 +78,10 @@ popd
 #    $BACKUP/var/rundeck/projects/* /var/rundeck/projects
 
 # - Execution log output.
-rsync -acz $BACKUP/var/lib/rundeck/logs/* /var/lib/rundeck/logs
-
+if [ "$(ls -A $BACKUP/var/lib/rundeck/logs/)" ]
+then
+	rsync -acz $BACKUP/var/lib/rundeck/logs/* /var/lib/rundeck/logs
+fi
 echo Done.
 
 exit $?

@@ -6,15 +6,16 @@ set -u
 
 # Process command line arguments.
 
-if [ $# -lt 3 ]
+if [ $# -lt 5 ]
 then
-    echo >&2 "usage: bootstrap name mysqladdr rundeck_yum_repo [rerun_yum_repo]"
+    echo >&2 "usage: bootstrap name mysqladdr rundeck_yum_repo rerun_yum_repo webdav_url"
     exit 1
 fi
 NAME=$1
 MYSQLADDR=$2
 RUNDECK_REPO_URL=$3
-RERUN_REPO_URL=${4:-}
+RERUN_REPO_URL=${4}
+WEBDAV_URL=${5}
 
 # Software install
 # ----------------
@@ -62,6 +63,15 @@ else
 fi
 yum -y install rundeck
 
+# Retreive the webav-logstore file store plugin.
+curl -L -s -f -o /var/lib/rundeck/libext/webdav-logstore-plugin.jar \
+   "http://dl.bintray.com/ahonor/rundeck-plugins/rundeck-webdav-logstore-plugin-1.0.0.jar"
+chown rundeck:rundeck /var/lib/rundeck/libext/webdav-logstore-plugin.jar
+mkdir -p /var/lib/rundeck/libext/cache/webdav-logstore-plugin
+chown -R rundeck:rundeck /var/lib/rundeck/libext/cache/webdav-logstore-plugin
+
+
+
 # Reset the home directory permission as it comes group writeable.
 # This is needed for ssh requirements.
 chmod 755 ~rundeck
@@ -80,7 +90,7 @@ service iptables stop
 cp /vagrant/templates/apitoken.aclpolicy /etc/rundeck/apitoken.aclpolicy
 
 #
-# Configure the mysql connection.
+# Configure the mysql connection and log file storage plugin.
 cd /etc/rundeck
 cat >rundeck-config.properties.new <<EOF
 #loglevel.default is the default log level for jobs: ERROR,WARN,INFO,VERBOSE,DEBUG
@@ -91,9 +101,18 @@ dataSource.url = jdbc:mysql://$MYSQLADDR/rundeck?autoReconnect=true
 dataSource.username=rundeckuser
 dataSource.password=rundeckpassword
 rundeck.clusterMode.enabled=true
+rundeck.execution.logs.fileStoragePlugin=webdav-logstore
 EOF
 mv rundeck-config.properties.new rundeck-config.properties
 chown rundeck:rundeck rundeck-config.properties
+
+# Configure the webdav-logstore plugin.
+cat >>/etc/rundeck/framework.properties<<EOF
+framework.plugin.LogFileStorage.webdav-logstore.webdavUrl = $WEBDAV_URL
+framework.plugin.LogFileStorage.webdav-logstore.webdavUsername = admin
+framework.plugin.LogFileStorage.webdav-logstore.webdavPassword = admin
+EOF
+
 
 # Replace references to localhost with this node's name.
 sed "s/localhost/$NAME/g" framework.properties > framework.properties.new
@@ -119,16 +138,8 @@ echo 'rundeck' | passwd --stdin rundeck
 
 set +e; # shouldn't have to turn off errexit.
 
-mkdir -p /var/log/vagrant
-if ! /etc/init.d/rundeckd status
-then
-    echo "Starting rundeck..."
-    (
-        exec 0>&- # close stdin
-        /etc/init.d/rundeckd start 
-    ) &> /var/log/rundeck/service.log # redirect stdout/err to a log.
-
-    success_msg="Started SocketConnector@"
+function wait_for_success_msg {
+    success_msg=$1
     let count=0 max=18
 
     while [ $count -le $max ]
@@ -144,9 +155,25 @@ then
         }
         sleep 10; # wait 10s before trying again.
     done
+}
+
+mkdir -p /var/log/vagrant
+success_msg="Started SocketConnector@"
+
+if ! /etc/init.d/rundeckd status
+then
+    echo "Starting rundeck..."
+    (
+        exec 0>&- # close stdin
+        /etc/init.d/rundeckd start 
+    ) &> /var/log/rundeck/service.log # redirect stdout/err to a log.
+
+    wait_for_success_msg "$success_msg"
+
 fi
 
 echo "Rundeck started."
+
 
 # Done.
 exit $?
