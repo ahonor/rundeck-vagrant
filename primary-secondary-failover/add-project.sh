@@ -20,9 +20,9 @@ echo Create project $PROJECT...
 su - rundeck -c "rd-project -a create -p $PROJECT"
 
 # Run simple commands to double check the project.
-dispatch -p $PROJECT > /dev/null
+su - rundeck -c "dispatch -p $PROJECT" > /dev/null
 # Fire off a command.
-dispatch -p $PROJECT -f -- whoami
+su - rundeck -c "dispatch -p $PROJECT -f -- whoami"
 
 
 echo "Project created. Update resource metadata for this host."
@@ -44,7 +44,7 @@ chown -R rundeck:rundeck /var/rundeck/projects/$PROJECT
 
 # run the node listing.
 echo "List the nodes tagged rundeck:"
-dispatch -p $PROJECT -v -I tags=rundeck
+su - rundeck -c "dispatch -p $PROJECT -v -I tags=rundeck"
 
 
 exit $?

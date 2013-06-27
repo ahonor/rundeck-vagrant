@@ -74,12 +74,15 @@ fi
 chown -R rundeck:rundeck $RESOURCES
 
 # Test the primary can be listed by name or tags.
-if [ "$(dispatch -p ${PROJECT} -I name=${NAME})" != ${NAME} ]
+result=$(su - rundeck -c "dispatch -p ${PROJECT} -I name=${NAME}")
+if [ "$result" != ${NAME} ]
 then
     echo >&2 "primary node could not be found by name."
     exit 1
 fi
-if [ "$(dispatch -p ${PROJECT} -I tags=rundeck+primary)" != ${NAME} ]
+
+result=$(su - rundeck -c "dispatch -p ${PROJECT} -I tags=rundeck+primary")
+if [ "$result" != ${NAME} ]
 then
     echo >&2 "primary node could not be found by tags."
     exit 1

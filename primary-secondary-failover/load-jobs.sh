@@ -48,9 +48,11 @@ echo "Updating job definitions for this environment"
 sed -e 's,@SCRIPTDIR@,/var/lib/rundeck/scripts/failover,g' /vagrant/jobs/jobs.xml |
 xmlstarlet ed -u "//job/context/options/option[@name='key']/@value" -v "$token" |
 xmlstarlet ed -u "//job/context/options/option[@name='project']/@value" -v "$PROJECT" |
-xmlstarlet ed -u "//job/context/options/option[@name='primary']/@value" -v "${PRIMARY:-}" > jobs.xml.new
+xmlstarlet ed -u "//job/context/options/option[@name='primary']/@value" -v "${PRIMARY:-}" > /tmp/jobs.xml.new
 
 
 # Now load the jobs 
-rd-jobs load -f jobs.xml.new
+chown rundeck /tmp/jobs.xml.new
+su - rundeck -c "rd-jobs load -f /tmp/jobs.xml.new"
+
 exit $?

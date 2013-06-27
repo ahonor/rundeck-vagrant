@@ -65,10 +65,10 @@ yum -y install rundeck
 
 # Retreive the webav-logstore file store plugin.
 curl -L -s -f -o /var/lib/rundeck/libext/webdav-logstore-plugin.jar \
-   "http://dl.bintray.com/ahonor/rundeck-plugins/rundeck-webdav-logstore-plugin-1.0.0.jar"
+   "http://dl.bintray.com/ahonor/rundeck-plugins/rundeck-webdav-logstore-plugin-1.0.2.jar"
 chown rundeck:rundeck /var/lib/rundeck/libext/webdav-logstore-plugin.jar
 mkdir -p /var/lib/rundeck/libext/cache/webdav-logstore-plugin
-chown -R rundeck:rundeck /var/lib/rundeck/libext/cache/webdav-logstore-plugin
+chown -R rundeck:rundeck /var/lib/rundeck/libext/cache
 
 
 
@@ -160,12 +160,12 @@ function wait_for_success_msg {
 mkdir -p /var/log/vagrant
 success_msg="Started SocketConnector@"
 
-if ! /etc/init.d/rundeckd status
+if ! service rundeckd status
 then
     echo "Starting rundeck..."
     (
         exec 0>&- # close stdin
-        /etc/init.d/rundeckd start 
+        service rundeckd start 
     ) &> /var/log/rundeck/service.log # redirect stdout/err to a log.
 
     wait_for_success_msg "$success_msg"
