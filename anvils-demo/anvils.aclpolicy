@@ -30,11 +30,15 @@ for:
     - match:
         group: 'anvils'
         name: '.*'
-        allow: [run,read]
+      allow: [run,read]
+    - match:
+        group: 'anvils'
+        name: 'Promote'
+      allow: [read]
     - match:
         group: 'anvils/web'
         name: '.*'
-        allow: [run,read]
+      allow: [run,read]
   node:
     - allow: [read,run] # allow read/run for all nodes
 by:
@@ -42,7 +46,7 @@ by:
 
 ---
 
-description: Acess for releng.
+description: Acesss for releng.
 context:
   project: '.*'
 for:
@@ -52,7 +56,7 @@ for:
     - match:
         group: 'anvils'
         name: 'Promote'
-        allow: [run,read]
+      allow: [run,read]
   node:
     - allow: [read,run] # allow read/run for all nodes
 by:
