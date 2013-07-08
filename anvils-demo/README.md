@@ -164,8 +164,13 @@ already loaded. All jobs are organized under a common group called "anvils".
 - anvils/web/start - 'start the web servers'
 - anvils/web/stop - 'stop the web servers'
 
-Each job is defined in its own file using the [XML format](http://rundeck.org/docs/manpages/man5/job-v20.html). [YAML](http://rundeck.org/docs/manpages/man5/job-yaml-v12.html) could also have been
-used as an alternative syntax.
+Each job is defined in its own file using the 
+[XML format](http://rundeck.org/docs/manpages/man5/job-v20.html). 
+[YAML](http://rundeck.org/docs/manpages/man5/job-yaml-v12.html) could also have been used as an alternative syntax. Rundeck jobs can call
+scripts stored in a web server by specifying its location with a 
+[scripturl](http://rundeck.org/docs/manpages/man5/job-v20.html#script-sequence-step).
+Storing scripts outside of a rundeck job, faciliates better collaboration
+and configuration management.
 
 Using job groups is optional but is often helpful to organize procedures
 and simplify setting up ACL policies.
@@ -224,4 +229,11 @@ Also, the [notification](http://rundeck.org/docs/manpages/man5/job-v20.html#noti
 This script for this job runs on the Rundeck server itself.
 
 * [job source](https://github.com/ahonor/rundeck-vagrant/blob/master/anvils-demo/jobs/nightly_catalog_rebuild.xml)
+
+## Where to go from here
+
+This demo helps introduce new users to Rundeck and gives an idea for how Rundeck can help
+with handoffs between teams, increase visibility and provide self service. 
+
+See the [Documentation](http://rundeck.org/docs.html) for more information.
 
