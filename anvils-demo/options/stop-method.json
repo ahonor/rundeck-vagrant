@@ -1,4 +1,0 @@
-[ 
-  {name:"normal", value:"anvils:stop"}, 
-  {name:"force", value:"anvils:stop --force"} 
-]
