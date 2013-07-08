@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project>
+
+  <node name="web1" type="Node"
+     description="an anvils web server" 
+     hostname="localhost"  username="anvils_www1" tags="web" 
+   />
+  <node name="web2" type="Node" 
+     description="an anvils web server" 
+     hostname="localhost"  username="anvils_www2" tags="web"
+   />
+
+
+  <node name="app1" type="Node" 
+     description="an avnils app server" 
+     hostname="localhost"  username="anvils_app1" tags="app"
+  />
+  <node name="app2" type="Node" 
+     description="an anvils app server" 
+     hostname="localhost"  username="anvils_app2" tags="app"
+  />
+
+  <node name="db1" type="Node" 
+     description="the anvils database server" 
+     hostname="localhost"  username="anvils_db" tags="db"
+  /> 
+
+</project>
