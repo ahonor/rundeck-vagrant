@@ -41,7 +41,6 @@ exit $?]]></script>
         <option required='true' multivalued='true' name='packages' enforcedvalues='true' valuesUrl='http://localhost/anvils/options/packages/${option.release.value}.json' delimiter=','>
           <description>packages versions</description>
         </option>
-
       </options>
     </context>
     <group>anvils</group>

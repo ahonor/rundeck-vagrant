@@ -49,8 +49,9 @@ cp /vagrant/anvils.aclpolicy /etc/rundeck/
 # Add user/roles to the realm.properties
 cat >> /etc/rundeck/realm.properties <<EOF
 admin:admin,user,admin,anvils
-dev:dev,user,anvils
-ops:ops,user,anvils
+dev:dev,dev,user,anvils
+ops:ops,ops,user,anvils
+releng:releng,releng,user,anvils
 EOF
 
 #

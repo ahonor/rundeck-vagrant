@@ -30,15 +30,33 @@ for:
     - match:
         group: 'anvils'
         name: '.*'
-      allow: [run,read]
+        allow: [run,read]
     - match:
         group: 'anvils/web'
         name: '.*'
-      allow: [run,read]
+        allow: [run,read]
   node:
     - allow: [read,run] # allow read/run for all nodes
 by:
   group: ops
+
+---
+
+description: Acess for releng.
+context:
+  project: '.*'
+for:
+  resource:
+    - allow: read
+  job:
+    - match:
+        group: 'anvils'
+        name: 'Promote'
+        allow: [run,read]
+  node:
+    - allow: [read,run] # allow read/run for all nodes
+by:
+  group: ops  
 
 ---
 
@@ -51,4 +69,4 @@ for:
   project:
     - allow: [read]
 by:
-  group: [dev,ops]
+  group: [dev,ops,releng]
