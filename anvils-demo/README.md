@@ -27,8 +27,7 @@ the vagrant provisioning scripts:
 along with some utility packages like xmlstarlet.
 * [add-project.sh](https://github.com/ahonor/rundeck-vagrant/blob/master/anvils-demo/add-project.sh): Creates the "anvils" rundeck project and configures the user accounts,
 nodes, ssh access, and copies scripts to the apache document root.
-* [install-httpd.sh](https://github.com/ahonor/rundeck-vagrant/blob/master/anvils-demo/install-httpd.sh): Installs Apache httpd and enables the mod_dav plugin to provide "PUT"-based access
-to publish files.
+* [install-httpd.sh](https://github.com/ahonor/rundeck-vagrant/blob/master/anvils-demo/install-httpd.sh): Installs Apache httpd, creates the document root for scripts and options and enables the mod_dav plugin to provide future "PUT"-based access to publish files.
 
 ### Requirements
 
@@ -57,7 +56,7 @@ and increasing the level of visibility for everybody.
 
 When an Anvils web server acts up under load, it needs to be restarted. At this point, someone from the NOC Team calls the Release Engineering team to do the restart. But under load, the Anvils web servers don't always stop using the normal method. When this happens, the Devs need to get involved to run their special script to forcibly stop the web server processes. Not only is this an inefficient process, but due to compliance reasons, the ops team can't give shell login access to the Devs to view logs and check the web servers process status.
 
-So the team turns to Rundeck. The Dev provided scripts are plugged into Rundeck jobs that can be safely and securely called by the NOC (and both receive notifications and know how to follow the output). Once they are happy with how that works, they can handoff a button to the NOC Team and allow them to safely and securely call the restart procedure themselves. 
+So the team turns to Rundeck. The Dev provided scripts are plugged into Rundeck jobs that can be safely and securely called by the NOC (and both receive notifications and know how to follow the output). Once the devs are happy with how the procedure works, they can handoff a Restart button to the NOC Team which allows ops a safe and secure way to call the required restart method themselves. A "Status" job is runnable by both Developers and NOC teams to check on the health of the web servers at any time.
 
 
 ### Story #2
@@ -66,7 +65,7 @@ So the team turns to Rundeck. The Dev provided scripts are plugged into Rundeck 
 
 The Release Engineering team needs a method to promote new versions of the Anvils software to the artifact repositories used by Operations to do deployments. Because there are several upstream repositories (eg, CI, stable and release) containing any number of releases and associated package versions, the Job should contain smart menus to let users drill down to the package versions they want to promote. We want a mistake-proof method of executing the promotion, and we want it to be logged and visible to all in our organization. 
 
-So the team turns to Rundeck. The promotion scripts that pull from one repository and upload to another are plugged into Rundeck jobs. Using Rundeck option providers, the jobs are able to have drop down menus that are populated with the correct repositories and their available artifacts.  
+So the team turns to Rundeck. The promotion scripts that pull from one repository and upload to another are plugged into Rundeck jobs. Using Rundeck option providers, the jobs are able to have drop down menus that are populated with the correct repositories and their available artifacts. 
 
 
 ### Story #3
@@ -142,16 +141,16 @@ Since this is a single-machine Vagrant instance,
 a little bit of cleverness is used to make the single node look like it is actually six.
 Each node is is uniquely named (eg www_1.anvils.com) and given its own Linux system account (eg www_1). Each node shares the same hostname (eg localhost, the rundeck server). The Rundeck server
 ssh's to the appropriate node's username to perform any needed action by the rundeck Jobs.
-This is equivelent to saying `ssh www_1@localhost <command>`.
+This is equivelent to saying `rundeck-server $ ssh www_1@localhost <command>`.
 
 While this example makes use of the bundled SSH support, Rundeck command dispatching is 
-completely pluggable and open ended to your desired execution framework.
+completely pluggable and open ended to use your desired execution framework (eg, winrm, salt, mcollective, custom-xml-rpc, etc).
 
-You can access the resources model for a project using the Rundeck Web API.
+You can retrieve the node info for a project using the Rundeck Web API.
 This URL lists the resources for anvils: 
-http://192.168.50.2:4440/api/5/project/anvils/resources
+http://192.168.50.2:4440/api/5/project/anvils/resources .
 Of course, this is canned demo data and a real rundeck project generally gets
-this resource info from an external source like your CMDB, Chef, Puppet, AWS, Rightscale etc.
+this node info from an external source like your CMDB, Chef, Puppet, AWS, Rightscale etc.
 
 ### Jobs
 
@@ -168,7 +167,13 @@ already loaded. All jobs are organized under a common group called "anvils".
 Each job is defined in its own file using the [XML format](http://rundeck.org/docs/manpages/man5/job-v20.html). [YAML](http://rundeck.org/docs/manpages/man5/job-yaml-v12.html) could also have been
 used as an alternative syntax.
 
+Using job groups is optional but is often helpful to organize procedures
+and simplify setting up ACL policies.
+
 #### Promote
+
+The Promote job is run by the Release Engeering team to publish artifacts from
+upstream repositories to ones used by operations.
 
 A key part to the promote job is a user interface that lets users manage a hierarchical set of job choices.
 The Promote job prompts the user for several choices about which package versions to publish
@@ -184,15 +189,20 @@ but does show how a script can access options data set by the job.
 
 #### Restart
 
+The Restart job is run by the Operations team to manage the web tier's restart procedure.
+
 The Restart job includes a "method" option to support the two methods to stop the web servers, "normal" and "force".
 Also, because the location of the application installation directory is expected to
 vary, a "dir" option is also presented. 
 
-This job is defined to execute on nodes tagged "www".
+This job is defined to execute on nodes tagged "www". The Restart job actually builds on two lower level jobs, web/stop and web/start. This kind of job composition is typical for rundeck users as it gives them building blocks to create higher levels of automation later.
 
 * [job source](https://github.com/ahonor/rundeck-vagrant/blob/master/anvils-demo/jobs/Restart.xml)
 
 #### Status
+
+The Status job is used by both Developers and Operations to get a heath check of the
+web tier.
 
 The Status job executes a procedure written by the devs to check the health of the web tier.
 By default, rundeck jobs stop if a failure occurs. This Status job takes advantage of rundeck
@@ -203,6 +213,8 @@ This job is defined to execute on nodes tagged "www".
 * [job source](https://github.com/ahonor/rundeck-vagrant/blob/master/anvils-demo/jobs/Status.xml)
 
 #### nightly_catalog_rebuild
+
+The nightly_catalog_rebuild job is provided by develoeprs to run automatically every night.
 
 The nightly_catalog_rebuild job is meant to run at 00:00:00 (midnight) every day.
 The [schedule](http://rundeck.org/docs/manpages/man5/job-v20.html#schedule) element in the job definition specifies this in a crontab like format.
