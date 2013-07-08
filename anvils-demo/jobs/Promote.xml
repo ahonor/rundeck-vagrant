@@ -27,7 +27,7 @@ done
 exit $?]]></script>
       </command>
     </sequence>
-    <description>promote the packages</description>
+    <description>promote the packages to the ops repository.</description>
     <name>Promote</name>
     <context>
       <project>anvils</project>
