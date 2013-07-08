@@ -20,6 +20,16 @@ The vagrant configuration defines the following virtual machines:
 
 The machine uses a centos base box and installs software via yum/rpm.
 
+If you are curious how the rundeck and apache instances are set up see
+the vagrant provisioning scripts:
+
+* [install-rundeck.sh](https://github.com/ahonor/rundeck-vagrant/blob/master/anvils-demo/install-rundeck.sh): Installs java, rundeck and the hipchat notification plugin
+along with some utility packages like xmlstarlet.
+* [add-project.sh](https://github.com/ahonor/rundeck-vagrant/blob/master/anvils-demo/add-project.sh): Creates the "anvils" rundeck project and configures the user accounts,
+nodes, ssh access, and copies scripts to the apache document root.
+* [install-httpd.sh](https://github.com/ahonor/rundeck-vagrant/blob/master/anvils-demo/install-httpd.sh): Installs Apache httpd and enables the mod_dav plugin to provide "PUT"-based access
+to publish files.
+
 ### Requirements
 
 * Internet access to download packages from public repositories.
@@ -31,31 +41,44 @@ Start up the VM like so:
 
     vagrant up rundeck
 
-You can access the rundecks from your host machine using the following URLs:
+You can access the rundeck and httpd instances from your host machine using the following URLs:
 
 * rundeck: http://192.168.50.2:4440
 * httpd: http://192.168.50.2/anvils
 
 ## User stories
 
-Every demo needs a back story. The Anvils story begins with a problem about
-the right way to restart the web tier. The problem at Anvils is under load, the
-web servers don't always stop using the normal method documented for ops.
-This requires the devs to get involved and run their own script to forcably stop
-the web server processes. 
-Also, due to compliance reasons, the ops team should not give shell login access
-to the devs to view logs and check the web servers process status.
-But without this access, devs are left with no visibility
-to what ops sees in production.
+Every demo needs a story. There are 3 stories in this demo. The unifying theme to all of them is "low MTTB" (with Rundeck you have the lowest "Mean Time to Button") for self service
+and increasing the level of visibility for everybody.
 
-The releng team needs a method to promote new versions of the Anvils software
-to the artifact repositories used by ops. Because there are several upstream
-repositories (eg, CI, stable and release) containing any number of releases
-and associated package versions, the Job should contain smart menus to
-let users drill down to the package versions they want to promote.
+### Story #1
 
-Finally, the devs need ops to run a nightly batch job to rebuild catalog data.
-This Job should run at a regular time period using the procedure written by the devs.
+* Actors: Developers, Release Engineering, Operations
+
+When an Anvils web server acts up under load, it needs to be restarted. At this point, someone from the NOC Team calls the Release Engineering team to do the restart. But under load, the Anvils web servers don't always stop using the normal method. When this happens, the Devs need to get involved to run their special script to forcibly stop the web server processes. Not only is this an inefficient process, but due to compliance reasons, the ops team can't give shell login access to the Devs to view logs and check the web servers process status.
+
+So the team turns to Rundeck. The Dev provided scripts are plugged into Rundeck jobs that can be safely and securely called by the NOC (and both receive notifications and know how to follow the output). Once they are happy with how that works, they can handoff a button to the NOC Team and allow them to safely and securely call the restart procedure themselves. 
+
+
+### Story #2
+
+* Actors: Release Engineering
+
+The Release Engineering team needs a method to promote new versions of the Anvils software to the artifact repositories used by Operations to do deployments. Because there are several upstream repositories (eg, CI, stable and release) containing any number of releases and associated package versions, the Job should contain smart menus to let users drill down to the package versions they want to promote. We want a mistake-proof method of executing the promotion, and we want it to be logged and visible to all in our organization. 
+
+So the team turns to Rundeck. The promotion scripts that pull from one repository and upload to another are plugged into Rundeck jobs. Using Rundeck option providers, the jobs are able to have drop down menus that are populated with the correct repositories and their available artifacts.  
+
+
+### Story #3
+
+* Actors: Developers, Operations
+
+A nightly batch job needs to be run to rebuild catalog data. The developers have written a series of procedures to do the catalog rebuild and they need Operations to run them. The job needs to run at a regularly scheduled time and the right people need to be notified if there is a failure. This is a critical business process, so everyone in the organization needs a known place to look to see the status of this job.
+
+So the team turns to Rundeck. The scripts are plugged into Rundeck jobs. The catalog rebuild job is now run automatically by Rundeck each night and the appropriate notifications are sent. Also, the Ops team has given business managers the ability to run the job on demand if they need an update sooner than the next scheduled nightly run.
+
+Also, because the ops team uses [HipChat](http://www.hipchat.com) for a shared running chat log, notifications
+should also be configured to send job status there.
 
 ## Logins and access control
 
@@ -113,12 +136,13 @@ them environment independent. Here's the metadata for the "www_1.anvils.com" nod
         ssh-keypath: /var/lib/rundeck/.ssh/id_rsa
         osName: Linux
 
-### Making one node look like 6
+### Making one node look like six
 
 Since this is a single-machine Vagrant instance,
 a little bit of cleverness is used to make the single node look like it is actually six.
-Each node is is uniquely named and given its own Linux system account. The Rundeck server
-SSH's to the different node's system account to perform any needed action by the rundeck Jobs.
+Each node is is uniquely named (eg www_1.anvils.com) and given its own Linux system account (eg www_1). Each node shares the same hostname (eg localhost, the rundeck server). The Rundeck server
+ssh's to the appropriate node's username to perform any needed action by the rundeck Jobs.
+This is equivelent to saying `ssh www_1@localhost <command>`.
 
 While this example makes use of the bundled SSH support, Rundeck command dispatching is 
 completely pluggable and open ended to your desired execution framework.
