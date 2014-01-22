@@ -1,0 +1,66 @@
+# Define top-level entry:
+dn: dc=example,dc=com
+objectClass: dcObject
+objectClass: organization
+o: Example, Inc.
+dc: example
+
+# Define an entry to contain users:
+dn: ou=users,dc=example,dc=com
+objectClass: organizationalUnit
+ou: users
+
+# Define some users:
+dn: cn=admin,ou=users,dc=example,dc=com
+userPassword: admin
+objectClass: person
+sn: The admin account for the Example client to use
+cn: admin
+
+dn: cn=build,ou=users,dc=example,dc=com
+userPassword: build
+objectClass: person
+sn: The account to use to demonstrate managing builds only
+cn: build
+
+dn: cn=deploy,ou=users,dc=example,dc=com
+userPassword: deploy
+objectClass: person
+sn: The account to use to demonstrate managing deployment only
+cn: deploy
+
+# Define an entry to contain roles:
+dn: ou=roles,dc=example,dc=com
+objectClass: organizationalUnit
+ou: roles
+
+# Define some roles and their membership:
+dn: cn=architect,ou=roles,dc=example,dc=com
+objectClass: groupOfUniqueNames
+uniqueMember: cn=admin,ou=users,dc=example,dc=com
+cn: architect
+
+dn: cn=admin,ou=roles,dc=example,dc=com
+objectClass: groupOfUniqueNames
+uniqueMember: cn=admin,ou=users,dc=example,dc=com
+cn: admin
+
+dn: cn=user,ou=roles,dc=example,dc=com
+objectClass: groupOfUniqueNames
+uniqueMember: cn=admin,ou=users,dc=example,dc=com
+uniqueMember: cn=deploy,ou=users,dc=example,dc=com
+uniqueMember: cn=build,ou=users,dc=example,dc=com
+cn: user
+
+dn: cn=build,ou=roles,dc=example,dc=com
+objectClass: groupOfUniqueNames
+uniqueMember: cn=admin,ou=users,dc=example,dc=com
+uniqueMember: cn=build,ou=users,dc=example,dc=com
+cn: build
+
+dn: cn=deploy,ou=roles,dc=example,dc=com
+objectClass: groupOfUniqueNames
+uniqueMember: cn=admin,ou=users,dc=example,dc=com
+uniqueMember: cn=deploy,ou=users,dc=example,dc=com
+cn: deploy
+
