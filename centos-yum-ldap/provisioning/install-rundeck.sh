@@ -40,8 +40,6 @@ else
 fi
 yum -y --skip-broken install rundeck
 
-# 2.0 uses newer jetty. This should eventually be fixed in the rpm.
-#sed -i "s/org.mortbay/org.eclipse/g" /etc/rundeck/jaas-loginmodule.conf
 cp /vagrant/jaas-loginmodule.conf /etc/rundeck/
 
 #
@@ -54,11 +52,8 @@ service iptables stop
 
 
 #
-# Configure the mysql connection and log file storage plugin.
+# Configure the server URLS.
 cd /etc/rundeck
-
-# cp /vagrant/provisioning/id_rsa* /var/lib/rundeck/.ssh/
-# chown rundeck:rundeck /var/lib/rundeck/.ssh/
 
 # Update the framework.properties with name
 sed -i \
