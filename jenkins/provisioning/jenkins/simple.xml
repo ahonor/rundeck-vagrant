@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>cp /var/lib/jenkins/examples/simple-1.0.0.war simple-1.0.$BUILD_NUMBER.war</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>*.war</artifacts>
+      <latestOnly>false</latestOnly>
+      <allowEmptyArchive>false</allowEmptyArchive>
+    </hudson.tasks.ArtifactArchiver>
+    <org.jenkinsci.plugins.rundeck.RundeckNotifier plugin="rundeck@3.0-SNAPSHOT">
+      <jobId>simple:deploy</jobId>
+      <options>build_number=$BUILD_NUMBER
+war_url=$BUILD_URL/artifact/simple-1.0.$BUILD_NUMBER.war</options>
+      <nodeFilters>tomcat</nodeFilters>
+      <tag></tag>
+      <shouldWaitForRundeckJob>true</shouldWaitForRundeckJob>
+      <shouldFailTheBuild>false</shouldFailTheBuild>
+    </org.jenkinsci.plugins.rundeck.RundeckNotifier>
+  </publishers>
+  <buildWrappers/>
+</project>
