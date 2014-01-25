@@ -43,8 +43,13 @@ mkdir -p $RDECK_BASE
 
 ## Rundeck WAR
 WAR=rundeck-${RUNDECK_VERSION}.war
-WAR_URL=http://download.rundeck.org/war/rundeck-${RUNDECK_VERSION}.war
-curl -f -s -L $WAR_URL -o ${WAR} -z ${WAR}
+if test -f /vagrant/rundeck-*.war ; then
+    WAR=`ls /vagrant/rundeck-*.war`
+else
+    WAR_URL=http://download.rundeck.org/war/rundeck-${RUNDECK_VERSION}.war
+    curl -f -s -L $WAR_URL -o ${WAR} -z ${WAR}
+
+fi
 mkdir -p /var/lib/tomcat6/webapps/rundeck
 unzip -qu ${WAR} -d /var/lib/tomcat6/webapps/rundeck
 
@@ -70,11 +75,12 @@ http_port=4440
 https_port=4443
 
 # Generate the keystore.
-keystore_file=$RDECK_BASE/keystore
+keystore_file=$RDECK_BASE/etc/truststore
 keystore_pass=password
 
 if [ ! -f "$keystore_file" ]
 then
+    mkdir -p $RDECK_BASE/etc
     keytool -genkey -noprompt \
         -alias     tomcat \
         -keyalg    RSA \
@@ -111,6 +117,7 @@ if [ ! -f $RDECK_BASE/rundeck-config.properties ]
 then
     cat >rundeck-config.properties.new <<EOF
 #loglevel.default is the default log level for jobs: ERROR,WARN,INFO,VERBOSE,DEBUG
+grails.serverURL=$server_url
 loglevel.default=INFO
 rdeck.base=$RDECK_BASE
 rss.enabled=true
