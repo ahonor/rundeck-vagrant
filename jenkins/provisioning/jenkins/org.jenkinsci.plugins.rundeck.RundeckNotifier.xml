@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<org.jenkinsci.plugins.rundeck.RundeckNotifier_-RundeckDescriptor plugin="rundeck@3.0-SNAPSHOT">
+  <rundeckInstance>
+    <url>http://localhost:4440</url>
+    <login>admin</login>
+    <password>admin</password>
+  </rundeckInstance>
+</org.jenkinsci.plugins.rundeck.RundeckNotifier_-RundeckDescriptor>
