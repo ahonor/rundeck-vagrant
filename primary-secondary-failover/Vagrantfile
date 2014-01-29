@@ -4,8 +4,9 @@ Vagrant.configure("2") do |config|
   config.vm.box_url = "https://dl.dropbox.com/u/7225008/Vagrant/CentOS-6.3-x86_64-minimal.box"
 
   PROJECT="examples"
-  RUNDECK_YUM_REPO="https://bintray.com/rundeck/ci-staging-rpm/rpm"
-  RERUN_YUM_REPO="https://bintray.com/ahonor/rerun-rpm/rpm"
+  RUNDECK_YUM_REPO="https://bintray.com/rundeck/candidate-rpm"
+
+  RERUN_YUM_REPO="https://bintray.com/rerun/rerun-rpm/rpm"
   PRIMARY="rundeck1"
   SECONDARY="rundeck2"
   WEBDAV_URL="http://192.168.50.7/dav"
@@ -13,7 +14,6 @@ Vagrant.configure("2") do |config|
   config.vm.define :mysql do |mysql|
     mysql.vm.hostname = "centos-mysql.local"
     mysql.vm.network :private_network, ip: "192.168.50.6"
-    mysql.vm.network :forwarded_port, guest: 3306, host: 13306
     mysql.vm.provision :shell, :path => "install-mysql.sh", :args => "'mysql'"
   end
 
@@ -21,14 +21,12 @@ Vagrant.configure("2") do |config|
   config.vm.define :webdav do |webdav|
     webdav.vm.hostname = "centos-webdav.local"
     webdav.vm.network :private_network, ip: "192.168.50.7"
-    webdav.vm.network :forwarded_port, guest: 8880, host: 18880
     webdav.vm.provision :shell, :path => "install-httpd.sh", :args => "'webdav'"
   end
 
   config.vm.define :rundeck1 do |primary|
     primary.vm.hostname = "#{PRIMARY}"
     primary.vm.network :private_network, ip: "192.168.50.4"
-    primary.vm.network :forwarded_port, guest: 4440, host: 14440
     primary.vm.provision :shell, :path => "install-rundeck.sh", :args => "#{PRIMARY} 192.168.50.6 #{RUNDECK_YUM_REPO} #{RERUN_YUM_REPO} #{WEBDAV_URL}"
     primary.vm.provision :shell, :path => "add-project.sh", :args => "#{PROJECT} #{PRIMARY} 192.168.50.4 rundeck,primary"
     primary.vm.provision :shell, :path => "generate-apikey.sh"
@@ -37,7 +35,6 @@ Vagrant.configure("2") do |config|
   config.vm.define :rundeck2 do |secondary|
     secondary.vm.hostname = "#{SECONDARY}"
     secondary.vm.network :private_network, ip: "192.168.50.5"
-    secondary.vm.network :forwarded_port, guest: 4440, host: 24440
     secondary.vm.provision :shell, :path => "install-rundeck.sh", :args => "#{SECONDARY} 192.168.50.6 #{RUNDECK_YUM_REPO} #{RERUN_YUM_REPO} #{WEBDAV_URL}"
     secondary.vm.provision :shell, :path => "add-project.sh", :args => "#{PROJECT} #{SECONDARY} 192.168.50.5 rundeck,secondary"
     secondary.vm.provision :shell, :path => "add-primary.sh", :args => "#{PROJECT} #{PRIMARY} 192.168.50.4"

@@ -91,7 +91,7 @@
     <sequence keepgoing='false' strategy='node-first'>
       <command>
         <scriptfile>/var/lib/rundeck/scripts/failover/check.sh</scriptfile>
-        <scriptargs>${option.primary} ${option.key} ${option.maxtry}</scriptargs>
+        <scriptargs>${option.primary} ${option.key} ${option.timeout}</scriptargs>
       </command>
     </sequence>
     <description>check if primary healthy</description>
@@ -102,8 +102,8 @@
         <option required='true' name='key' valueExposed='true' secure='true' value='dn8VdcK8sVssS4OVV5uk0sdECdOUdu67'>
           <description>the api key</description>
         </option>
-        <option required='true' name='maxtry' value='3'>
-          <description>maximum number of tries</description>
+        <option required='true' name='timeout' value='60'>
+          <description>timeout in seconds</description>
         </option>
         <option required='true' name='primary' value='http://127.0.0.1:14440'>
           <description>the rundeck url</description>

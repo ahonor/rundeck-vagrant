@@ -32,7 +32,7 @@ xmlstarlet fo -R -H curl.out > user.html 2>/dev/null
 
 # Query the profile for the first apitoken.
 # 
-token=$(xmlstarlet sel -N x="http://www.w3.org/1999/xhtml" -t -m "//x:span[@class='apitoken']" -v . -n user.html|head -1)
+token=$(xmlstarlet sel -t -m "//span[@class='apitoken']" -v . -n user.html|head -1)
 if [ -z "$token" ]
 then
     echo >&2 "No API token found in the user profile."

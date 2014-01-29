@@ -8,7 +8,7 @@ set -u
 
 if [ $# -lt 5 ]
 then
-    echo >&2 "usage: bootstrap name mysqladdr rundeck_yum_repo rerun_yum_repo webdav_url"
+    echo >&2 "usage: $0 name mysqladdr rundeck_yum_repo rerun_yum_repo webdav_url"
     exit 1
 fi
 NAME=$1
@@ -158,7 +158,7 @@ function wait_for_success_msg {
 }
 
 mkdir -p /var/log/vagrant
-success_msg="Started SocketConnector@"
+success_msg="Connector@"
 
 if ! service rundeckd status
 then

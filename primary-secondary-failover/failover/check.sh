@@ -7,37 +7,26 @@ set -u
 
 if [ $# -lt 3 ]
 then
-    echo >&2 "usage: $(basename $0) url apikey maxtry"
+    echo >&2 "usage: $(basename $0) url apikey timeout"
     exit 1
 fi
 
 RDURL=$1
 API_KEY=$2
-MAXTRY=$3
+TIMEOUT=$3
 
+: ${TIMEOUT:=60}
 
 APIURL="${RDURL}/api/1/system/info"
 AUTHHEADER="X-RunDeck-Auth-Token: $API_KEY"
 CURLOPTS="-s -S -L"
 CURL="curl $CURLOPTS"
 
-tryagain() {
-        max=$1
-        : ${cnt:=0} ${max:=3}
-        while [ $cnt -le $max ]
-        do
-            if [ $cnt -eq 3 ]
-            then
-                echo >&2 "Reached max tries: $max" 
-                exit 1
-            fi
-            cnt=$(expr $cnt + 1)
-        done
-}
+
+trap "{rerun_die 1 'Request exceeded timeout: $TIMEOUT'}" ALRM
 
 # Submit the request.
-trap '{ tryagain $MAXTRY }' ALRM
-timeout --signal=ALRM 60 $CURL -H "$AUTHHEADER" -o systeminfo.xml $APIURL
+timeout --signal=ALRM $TIMEOUT $CURL -H "$AUTHHEADER" -o systeminfo.xml $APIURL
 
 # validate the response is XML
 xmlstarlet val -q systeminfo.xml
