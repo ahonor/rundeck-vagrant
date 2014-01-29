@@ -28,8 +28,8 @@ Start up the VMs in the following order.
 
 You can access the rundecks from your host machine through vagrant's port forwarding.
 
-* rundeck1: http://localhost:14440
-* rundeck2: http://localhost:24440
+* rundeck1: http://192.168.50.4:4440
+* rundeck2: http://192.168.50.5:4440
 
 Login to either rundeck instance using user/pass: admin/admin
 
@@ -60,8 +60,8 @@ and have default option values appropriate for this environment.
 Go to the secondary rundeck and navigate to the "failover/check" job and run it.
 You should see system info about the primary displayed in the job output.
 
-    05:35:59    # System Stats for RunDeck 1.5.2 on node primary
-	05:35:59	- up since: 2013-05-13T15:12:06Z
+    05:35:59    # System Stats for Rundeck 2.0.0 on node rundeck1
+	05:35:59	- up since: 2014-01-29T15:12:06Z
 	05:35:59	- cpu avg: 0.0
 	05:35:59	- mem free: 124876264
 
