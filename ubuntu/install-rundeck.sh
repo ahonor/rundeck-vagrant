@@ -1,30 +1,23 @@
 #!/usr/bin/env bash
-DEB=http://build.rundeck.org/job/candidate-1.5.1/lastSuccessfulBuild/artifact/packaging/rundeck-1.5.1-1-GA.deb
-
-die() {
-   [[ $# -gt 1 ]] && { 
-	    exit_status=$1
-        shift        
-    }
-    printf >&2 "ERROR: $*\n"
-
-    exit ${exit_status:-1}
-}
-
-#trap 'die $? "*** bootstrap failed. ***"' ERR
 
 set -o nounset -o pipefail
 
+DEB_REPO_URL=$1
+
+# setup bintray debian repo
+echo "deb $DEB_REPO_URL /" >> /etc/apt/sources.list 
+echo "deb-src $DEB_REPO_URL /" >> /etc/apt/sources.list
+
 apt-get update
+
 # Install the JRE
 apt-get -y install openjdk-6-jre
 apt-get -y install curl
 
-# Install Rundeck core
 
-curl -s --fail $DEB -o rundeck.deb 
+# Install Rundeck 
+apt-get -y --force-yes install rundeck
 
-dpkg -i rundeck.deb
 sleep 10
 
 # Start up rundeck
@@ -38,7 +31,7 @@ then
     let count=0
     while true
     do
-        if ! grep  "Started SocketConnector@" /var/log/rundeck/service.log
+        if ! grep  "Started SelectChannelConnector@" /var/log/rundeck/service.log
         then  printf >&2 ".";# progress output.
         else  break; # successful message.
         fi

@@ -5,7 +5,9 @@ Vagrant.configure("2") do |config|
 
   config.vm.network :forwarded_port, guest: 4440, host: 14440
 
-  config.vm.provision :shell, :path => "bootstrap.sh"
+  deb_repo_url="http://dl.bintray.com/rundeck/rundeck-deb"
+
+  config.vm.provision :shell, :path => "install-rundeck.sh", :args => deb_repo_url
   config.vm.provision :shell, :path => "add-project.sh"
 
 end
