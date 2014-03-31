@@ -21,12 +21,9 @@ apt-get -y --force-yes install rundeck
 sleep 10
 
 # Start up rundeck
-if ! /etc/init.d/rundeckd status
+if ! $( status rundeckd | grep -q running )
 then
-    (
-        exec 0>&- # close stdin
-        /etc/init.d/rundeckd start 
-    ) &> /var/log/rundeck/service.log # redirect stdout/err to a log.
+    start rundeckd
 
     let count=0
     while true
