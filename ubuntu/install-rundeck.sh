@@ -11,7 +11,7 @@ echo "deb-src $DEB_REPO_URL /" >> /etc/apt/sources.list
 apt-get update
 
 # Install the JRE
-apt-get -y install openjdk-6-jre
+apt-get -y install openjdk-7-jre
 apt-get -y install curl
 
 
