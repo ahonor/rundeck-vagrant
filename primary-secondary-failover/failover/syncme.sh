@@ -13,7 +13,7 @@ RDURL=$1
 API_KEY=$2
 PROJECT=$3
 
- List of directories to backup
+# List of directories to backup
 # Exclude the resources.xml for the project.
 #DIRS=(/var/rundeck/projects /var/lib/rundeck/logs)
 
