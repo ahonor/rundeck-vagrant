@@ -11,7 +11,7 @@
     <sequence keepgoing='false' strategy='node-first'>
       <command>
         <jobref name='check' group='failover' />
-        <errorhandler>
+        <errorhandler keepgoingOnSuccess="true">
           <jobref name='takeover' group='failover' />
         </errorhandler>
       </command>
@@ -23,7 +23,7 @@
     </context>
     <notification>
       <onfailure>
-        <webhook urls='http://127.0.0.1/cgi-bin/mytakeover-notification.cgi' />
+        <webhook urls='http://192.168.50.7/cgi-bin/rundeck/takeover-notification.cgi?id=${execution.id}&amp;status=${execution.status}&amp;trigger=${notification.trigger}' />
       </onfailure>
     </notification>
     <dispatch>
