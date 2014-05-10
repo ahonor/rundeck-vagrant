@@ -18,6 +18,10 @@ yum install -y httpd xmlstarlet
 # Apache httpd
 # ------------
 
+# Create directory for takeover log messages
+mkdir -p /var/www/html/rundeck/takeovers
+chown apache:apache /var/www/html/rundeck/takeovers
+
 # Create directory for webdav lock files
 mkdir -p /var/lock/apache
 chown apache:apache /var/lock/apache
@@ -58,9 +62,16 @@ EOF
 # Create subdirectories for webdav content.
 mkdir -p /var/www/html/dav
 cat > /var/www/html/dav/hi.txt<<EOF
-hi
+hi, welcome to the WebDAV volume.
 EOF
 chown -R apache:apache /var/www/html/dav
+
+# Create directories for cgi content.
+mkdir -p /var/www/cgi-bin/rundeck
+# Copy the cgi scripts
+cp /vagrant/failover/*.cgi /var/www/cgi-bin/rundeck
+chown -R apache:apache /var/www/cgi-bin/rundeck
+chmod +x /var/www/cgi-bin/rundeck/*.cgi
 
 # start the httpd service
 service httpd start
