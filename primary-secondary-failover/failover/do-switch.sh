@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-set -e
-set -u
+set -eu
 
 
-echo Updating VIP
+
+echo "Updating VIP..."
 
 exit $?
 #
