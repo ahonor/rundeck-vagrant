@@ -61,11 +61,11 @@ else
         rpm -Uvh http://repo.rundeck.org/latest.rpm 
     fi
 fi
-yum -y install rundeck
+yum -y --skip-broken install rundeck
 
 # Retreive the webav-logstore file store plugin.
 curl -L -s -f -o /var/lib/rundeck/libext/webdav-logstore-plugin.jar \
-   "http://dl.bintray.com/ahonor/rundeck-plugins/rundeck-webdav-logstore-plugin-1.0.2.jar"
+   "http://dl.bintray.com/ahonor/rundeck-plugins/rundeck-webdav-logstore-plugin-2.1.0.jar"
 chown rundeck:rundeck /var/lib/rundeck/libext/webdav-logstore-plugin.jar
 mkdir -p /var/lib/rundeck/libext/cache/webdav-logstore-plugin
 chown -R rundeck:rundeck /var/lib/rundeck/libext/cache
@@ -106,12 +106,6 @@ EOF
 mv rundeck-config.properties.new rundeck-config.properties
 chown rundeck:rundeck rundeck-config.properties
 
-# Configure the webdav-logstore plugin.
-cat >>/etc/rundeck/framework.properties<<EOF
-framework.plugin.LogFileStorage.webdav-logstore.webdavUrl = $WEBDAV_URL
-framework.plugin.LogFileStorage.webdav-logstore.webdavUsername = admin
-framework.plugin.LogFileStorage.webdav-logstore.webdavPassword = admin
-EOF
 
 
 # Replace references to localhost with this node's name.
